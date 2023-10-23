@@ -20,6 +20,7 @@ for b in "${block[@]}"; do
   sed -i "s/#define QK8_1 32/#define QK8_1 ${b}/g" ggml.c
   grep "#define QK4_0" ggml.c
   grep "#define QK8_0" ggml.c
+  cmake -B build -DCMAKE_BUILD_TYPE=Release
   cmake --build build -j 6
   suffix="qk${b}"
   log_dir="exp/log-${name}-block${b}"
