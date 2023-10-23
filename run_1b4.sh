@@ -31,13 +31,13 @@ for b in "${block[@]}"; do
         /jfs-hdfs/user/xingchen.song/workspace/github/llama.cpp/models/ggml-${name}.fp16.gguf \
         models/ggml-${name}.${m}.${suffix}.gguf ${m} 10
 
-      echo "$m, inner"
+      echo "$b, $m, inner"
 
       ./build/bin/perplexity_1b4_inner -m models/ggml-${name}.${m}.${suffix}.gguf \
         -f /jfs-hdfs/user/xingchen.song/workspace/github/ggml/exp/torch/inner_100.txt \
         --ppl-stride 50 -c 100 -b 512 -s 2023 -t 8 >& ${log_dir}/inner.$m.log
 
-      echo "$m, common"
+      echo "$b, $m, common"
 
       ./build/bin/perplexity_1b4_common -m models/ggml-${name}.${m}.${suffix}.gguf \
         -f /jfs-hdfs/user/xingchen.song/workspace/github/ggml/exp/torch/common_100.txt \
