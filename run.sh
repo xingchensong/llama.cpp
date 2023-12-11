@@ -2,11 +2,13 @@
 # Copyright [2023-10-12] <sxc19@mails.tsinghua.edu.cn, Xingchen Song>
 
 
-block=("512" "1024" "2048" "128" "32")
+block=("32" "128" "512" "1024" "2048")
 
 # model=("Q8_0" "Q4_0" "Q4_1" "Q5_0" "Q5_1" "Q2_K" "Q3_K" "Q4_K" "Q5_K" "Q6_K")
 model=("Q8_0" "Q4_0" "Q4_1" "Q5_0" "Q5_1")
-name=("bloom1b4.v2" "llama2-7bchat")
+# name=("bloom1b4.v2" "llama2-7bchat")
+# name=("llama2-7bchat")
+name=("bloom1b4.v2")
 
 for n in "${name[@]}"; do
   for b in "${block[@]}"; do
@@ -28,19 +30,24 @@ for n in "${name[@]}"; do
     mkdir -p ${log_dir}
     for m in "${model[@]}"; do
         ./build/bin/quantize \
-          /jfs-hdfs/user/xingchen.song/workspace/github/llama.cpp/models/ggml-${n}.fp16.gguf \
+          /jfs-hdfs/user/nlp/LLM/model_files/llama.cpp/ggml-${n}.fp16.gguf \
           models/ggml-${n}.${m}.${suffix}.gguf ${m} 10
 
         echo "$n, block$b, $m, inner"
 
-        ./build/bin/perplexity_1b4_inner -m models/ggml-${n}.${m}.${suffix}.gguf \
-          -f /jfs-hdfs/user/xingchen.song/workspace/github/ggml/exp/torch/inner_100.txt \
+        if [ "${n}" = "bloom1b4.v2" ]; then
+          size=1b4
+        else
+          size=7b
+        fi
+        ./build/bin/perplexity_${size}_inner -m models/ggml-${n}.${m}.${suffix}.gguf \
+          -f data/inner_100.txt \
           --ppl-stride 50 -c 100 -b 512 -s 2023 -t 8 >& ${log_dir}/inner.$m.log
 
         echo "$n, block$b, $m, common"
 
-        ./build/bin/perplexity_1b4_common -m models/ggml-${n}.${m}.${suffix}.gguf \
-          -f /jfs-hdfs/user/xingchen.song/workspace/github/ggml/exp/torch/common_100.txt \
+        ./build/bin/perplexity_${size}_common -m models/ggml-${n}.${m}.${suffix}.gguf \
+          -f data/common_100.txt \
           --ppl-stride 50 -c 100 -b 512 -s 2023 -t 8 >& ${log_dir}/common.$m.log
     done
   done
